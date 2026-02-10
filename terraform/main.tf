@@ -27,9 +27,4 @@ module "ecs" {
   frontend_image = var.frontend_image
 }
 
-module "state" {
-  source = "./modules/s3"
 
-  bucket_name = "terraform-state-prod"
-  lock_table  = "terraform-locks"
-}

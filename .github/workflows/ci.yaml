@@ -43,7 +43,7 @@ jobs:
 
       - name: Terraform destroy
         run: |
-            cd Terraform
+            cd terraform
             terraform destroy \
             -var="aws_region=us-east-1" \
             -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}"

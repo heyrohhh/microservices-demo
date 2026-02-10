@@ -14,7 +14,7 @@ jobs:
 
       - name: set image version
         run: echo "VERSION=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
-
+      
       - name: docker login
         uses: docker/login-action@v3
         with:
@@ -27,3 +27,24 @@ jobs:
           context: ./src/frontend
           push: true
           tags: heyrohhh/frontend:${{ env.VERSION }}
+
+      
+      - name: aws login
+        uses : aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+     
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+       
+      - name: Terraform apply
+        run: |
+           cd terraform
+           terraform init
+           terraform apply -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}" -auto-approve
+
+         

@@ -47,7 +47,8 @@ jobs:
             terraform init
             terraform destroy \
             -var="aws_region=us-east-1" \
-            -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}"
+            -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}" \
+            -auto-approve
        
       # - name: Terraform plan
       #   run: |

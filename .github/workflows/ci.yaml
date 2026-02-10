@@ -9,8 +9,7 @@ jobs:
   codeInteg:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: set image version
         run: echo "VERSION=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
@@ -28,9 +27,8 @@ jobs:
           push: true
           tags: heyrohhh/frontend:${{ env.VERSION }}
 
-      
       - name: aws login
-        uses : aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -43,11 +41,9 @@ jobs:
        
       - name: Terraform apply
         run: |
-           cd terraform
-           terraform init
-           terraform apply \
-           -var="aws_region=us-east-1" \
-           -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}" \
-           -auto-approve
-
-         
+          cd terraform
+          terraform init -reconfigure
+          terraform apply \
+            -var="aws_region=us-east-1" \
+            -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}" \
+            -auto-approve

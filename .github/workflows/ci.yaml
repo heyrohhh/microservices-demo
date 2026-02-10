@@ -39,11 +39,16 @@ jobs:
         with:
           terraform_version: 1.6.6
        
-      - name: Terraform destroy
+      - name: Terraform plan
         run: |
-         cd terraform
-         terraform init
-         terraform destroy \
-         -var="aws_region=us-east-1" \
-         -var="frontend_image=dummy" \
-         -auto-approve
+          cd terraform
+          terraform init
+          terraform plan \
+          -var="aws_region=us-east-1" \
+          -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}" \
+          -out=tfplan
+
+      - name: Terraform apply
+        run: |
+          cd terraform
+          terraform apply -auto-approve tfplan

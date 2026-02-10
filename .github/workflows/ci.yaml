@@ -42,6 +42,7 @@ jobs:
       - name: Terraform apply
         run: |
           cd terraform
+          terraform init -reconfigure
           terraform destroy
           # terraform init -reconfigure
           # terraform apply \

@@ -100,33 +100,8 @@ jobs:
           terraform_version: 1.6.6
       - name: Terraform init
         run: |
-<<<<<<< HEAD
-          cd terraform
-          terraform init
-=======
             cd terraform
             terraform init
-            terraform destroy \
-            -var="aws_region=us-east-1" \
-            -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}" \
-            -auto-approve
-       
-      # - name: Terraform plan
-      #   run: |
-      #    cd terraform
-      #    terraform init
-      #    terraform plan \
-      #    -var="aws_region=us-east-1" \
-      #    -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}"
->>>>>>> 1bd39698772025ca285cc88a31770cbbc19e1a9c
-
-      # - name: Terraform destroy
-      #   run: |
-      #       cd terraform
-      #       terraform init
-      #       terraform destroy \
-      #       -var="aws_region=us-east-1" \
-      #       -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}"
        
       - name: Terraform plan
         run: |

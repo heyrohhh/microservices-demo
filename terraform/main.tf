@@ -58,6 +58,7 @@ module "sd" {
     "recomandation",
     "redis",
     "assitant",
-    "loadGenrator"
+    "loadGenrator",
+    "adservice"
   ]
 }

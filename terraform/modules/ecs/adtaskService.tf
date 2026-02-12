@@ -12,7 +12,7 @@ resource "aws_ecs_service" "adtask_service" {
   }
 
   service_registries {
-     registry_arn = var.discovery_arns["ad"]
+     registry_arn = var.discovery_arns["adservice"]
   }
 
 }

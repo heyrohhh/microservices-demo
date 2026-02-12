@@ -46,9 +46,3 @@ variable "cpu"{
 variable "memory" {
     default = "1024"
 }
-variable "discovery_arns" {
-  type =map(string)
-}
-variable "service_arns" {
-  
-}

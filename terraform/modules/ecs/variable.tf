@@ -57,9 +57,6 @@ variable "memory" {
   default = "1024"
 }
 
-variable "service_arns" {
-  
-}
 
 variable "discovery_arns" {
   type = map(string)

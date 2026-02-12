@@ -27,13 +27,13 @@ resource "aws_ecs_task_definition" "email" {
                 protocol="tcp"
                }]
                environment=[{name="PORT",value="8080"}]
-               logConfiguration=[{
+               logConfiguration={
                  logDriver="awslogs"
                     options = {
                       awslogs-group  = aws_cloudwatch_log_group.ecs_email.name
                       awslogs-region = var.aws_region
                       awslogs-stream-prefix = "ecs"}
-               }]
+               }
   }
   ])
 }

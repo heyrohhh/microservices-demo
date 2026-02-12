@@ -6,59 +6,120 @@ on:
       - main  
 
 jobs: 
+  detect-changes:
+   runs-on: ubuntu-latest
+   outputs:
+    frontend: ${{ steps.filter.outputs.frontend }}
+    adservice: ${{ steps.filter.outputs.adservice }}
+    cartservice: ${{ steps.filter.outputs.cartservice }}
+    checkoutservice: ${{ steps.filter.outputs.checkoutservice }}
+    productservice: ${{ steps.filter.outputs.productservice }}
+    shippingservice: ${{ steps.filter.outputs.shippingservice }}
+    paymentservice: ${{ steps.filter.outputs.paymentservice }}
+    currencyservice: ${{ steps.filter.outputs.currencyservice }}
+    emailservice: ${{ steps.filter.outputs.emailservice }}
+    recommendationservice: ${{ steps.filter.outputs.recommendationservice }}
+    shoppingassistantservice: ${{ steps.filter.outputs.shoppingassistantservice }}
+    loadgenerator: ${{ steps.filter.outputs.loadgenerator }}
+
+   steps:
+    - uses: actions/checkout@v4
+
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          frontend:
+            - 'src/frontend/**'
+          adservice:
+            - 'src/adservice/**'
+          cartservice:
+            - 'src/cartservice/**'
+          checkoutservice:
+            - 'src/checkoutservice/**'
+          productservice:
+            - 'src/productcatalogservice/**'
+          shippingservice:
+            - 'src/shippingservice/**'
+          paymentservice:
+            - 'src/paymentservice/**'
+          currencyservice:
+            - 'src/currencyservice/**'
+          emailservice:
+            - 'src/emailservice/**'
+          recommendationservice:
+            - 'src/recommendationservice/**'
+          shoppingassistantservice:
+            - 'src/shoppingassistantservice/**'
+          loadgenerator:
+            - 'src/loadgenerator/**'
+  set-version:
+    runs-on: ubuntu-latest
+    outputs:
+     version: ${{ steps.v.outputs.version }}
+    steps:
+     - id: v
+       run: echo "version=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+
   codeInteg:
+    needs: [detect-changes, set-version]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
          include:
             - service_name: frontend
+              filter: frontend
               context: ./src/frontend
               image: heyrohhh/frontend
             - service_name: adservice
+              filter: adservice
               context: ./src/adservice
               image: heyrohhh/adservice
             - service_name: cartservice
+              filter: cartservice
               context: ./src/cartservice/src/
               image: heyrohhh/cartservice
             - service_name: checkoutservice
+              filter: checkoutservice
               context: ./src/checkoutservice
               image: heyrohhh/checkoutservice
             - service_name: productservice
+              filter: productservice
               context: ./src/productcatalogservice
               image: heyrohhh/productservice
             - service_name: shippingservice
+              filter: shippingservice
               context: ./src/shippingservice
               image: heyrohhh/shippingservice
             - service_name: paymentservice
+              filter: paymentservice
               context: ./src/paymentservice
               image: heyrohhh/paymentservice
             - service_name: currencyservice
+              filter: currencyservice
               context: ./src/currencyservice
               image: heyrohhh/currencyservice
             - service_name: emailservice
+              filter: emailservice
               context: ./src/emailservice
-              image:  heyrohhh/emailservice
+              image: heyrohhh/emailservice
             - service_name: recommendationservice
+              filter: recommendationservice
               context: ./src/recommendationservice
               image: heyrohhh/recommendationservice
             - service_name: shoppingassistantservice
+              filter: shoppingassistantservice
               context: ./src/shoppingassistantservice
               image: heyrohhh/shoppingassistantservice
             - service_name: loadgenerator
+              filter: loadgenerator
               context: ./src/loadgenerator
               image: heyrohhh/loadgenerator
-    outputs:
-        version: ${{steps.uuid.outputs.sha}}
     steps:
       - name: checkout
         uses: actions/checkout@v4
-
-      - name: set image version
-        id: uuid
-        run: |
-           echo "sha=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
-           echo "VERSION=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
       
       - name: docker login
         uses: docker/login-action@v3
@@ -69,22 +130,20 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Docker image build & push
+        if: needs.detect-changes.outputs[matrix.filter] == 'true'
         uses: docker/build-push-action@v4
         with: 
           context: ${{ matrix.context }}
           push: true
-          tags: ${{ matrix.image }}:${{env.VERSION}},${{ matrix.image }}:latest
+          tags: ${{ matrix.image }}:${{ needs.set-version.outputs.version }},${{ matrix.image }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
   deploy-infra:
-    needs: codeInteg
+    needs: [codeInteg, set-version]
     runs-on: ubuntu-latest
     concurrency:
          group: terraform
          cancel-in-progress: true
-
-    env:
-      VERSION: ${{ needs.codeInteg.outputs.version }}
     steps:  
       - name: checkout
         uses: actions/checkout@v4
@@ -110,19 +169,19 @@ jobs:
           cd terraform
           terraform plan -out=tfplan \
           -var="aws_region=us-east-1" \
-          -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}" \
-          -var="ad_image=heyrohhh/adservice:${{ env.VERSION }}" \
-          -var="cart_image=heyrohhh/cartservice:${{ env.VERSION }}" \
-          -var="checkout_image=heyrohhh/checkoutservice:${{ env.VERSION }}" \
-          -var="product_image=heyrohhh/productservice:${{ env.VERSION }}" \
-          -var="shipping_image=heyrohhh/shippingservice:${{ env.VERSION }}" \
-          -var="payment_image=heyrohhh/paymentservice:${{ env.VERSION }}" \
-          -var="currency_img=heyrohhh/currencyservice:${{ env.VERSION }}" \
-          -var="email_Img=heyrohhh/emailservice:${{ env.VERSION }}" \
-          -var="recomandation_image=heyrohhh/recommendationservice:${{ env.VERSION }}" \
-          -var="assitant_image=heyrohhh/shoppingassistantservice:${{ env.VERSION }}" \
-          -var="load_Img=heyrohhh/loadgenerator:${{ env.VERSION }}"
-          
+          -var="frontend_image=heyrohhh/frontend:${{ needs.set-version.outputs.version }}" \
+          -var="ad_image=heyrohhh/adservice:${{ needs.set-version.outputs.version }}" \
+          -var="cart_image=heyrohhh/cartservice:${{ needs.set-version.outputs.version }}" \
+          -var="checkout_image=heyrohhh/checkoutservice:${{ needs.set-version.outputs.version }}" \
+          -var="product_image=heyrohhh/productservice:${{ needs.set-version.outputs.version }}" \
+          -var="shipping_image=heyrohhh/shippingservice:${{ needs.set-version.outputs.version }}" \
+          -var="payment_image=heyrohhh/paymentservice:${{ needs.set-version.outputs.version }}" \
+          -var="currency_img=heyrohhh/currencyservice:${{ needs.set-version.outputs.version }}" \
+          -var="email_Img=heyrohhh/emailservice:${{ needs.set-version.outputs.version }}" \
+          -var="recomandation_image=heyrohhh/recommendationservice:${{ needs.set-version.outputs.version }}" \
+          -var="assitant_image=heyrohhh/shoppingassistantservice:${{ needs.set-version.outputs.version }}" \
+          -var="load_Img=heyrohhh/loadgenerator:${{ needs.set-version.outputs.version }}"
+        
 
          
 

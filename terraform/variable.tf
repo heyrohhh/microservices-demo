@@ -41,10 +41,10 @@ variable "assitant_image" {
   type = string
   }
 variable "cpu"{
-  type = string
+  default = "512"
 }
 variable "memory" {
-  type = string
+    default = "1024"
 }
 variable "discovery_arns" {
   type =map(string)

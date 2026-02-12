@@ -7,4 +7,48 @@ variable "aws_region" {
 }
 
 
-
+variable "ad_image" {
+  type = string
+}
+variable "cart_image" {
+  type = string
+  }
+variable "checkout_image" {
+  type = string
+  }
+variable "currency_img" {
+  type = string
+  }
+variable "email_Img" {
+  type = string
+  }
+variable "load_Img" {
+  type = string
+}
+variable "payment_image" {
+  type = string
+}
+variable "product_image" {
+  type = string
+  }
+variable "recomandation_image" {
+  type = string
+  }
+variable "shipping_image" {
+  type = string
+  }
+variable "assitant_image" {
+  type = string
+  }
+variable "cpu"{
+  type = string
+}
+variable "memory" {
+  type = string
+}
+variable "discovery_arns" {
+  type =map(string)
+}
+variable "service_arns" {
+  
+}

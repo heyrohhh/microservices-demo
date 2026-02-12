@@ -8,12 +8,57 @@ on:
 jobs: 
   codeInteg:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+         include:
+            - service_name: frontend
+              context: ./src/frontend
+              image: heyrohhh/frontend
+            - service_name: adservice
+              context: ./src/adservice
+              image: heyrohhh/adservice
+            - service_name: cartservice
+              context: ./src/cartservice
+              image: heyrohhh/cartservice
+            - service_name: checkoutservice
+              context: ./src/checkoutservice
+              image: heyrohhh/checkoutservice
+            - service_name: productservice
+              context: ./src/productcatalogservice
+              image: heyrohhh/productservice
+            - service_name: shippingservice
+              context: ./src/shippingservice
+              image: heyrohhh/shippingservice
+            - service_name: paymentservice
+              context: ./src/paymentservice
+              image: heyrohhh/paymentservice
+            - service_name: currencyservice
+              context: ./src/currencyservice
+              image: heyrohhh/currencyservice
+            - service_name: emailservice
+              context: ./src/emailservice
+              image:  heyrohhh/emailservice
+            - service_name: recommendationservice
+              context: ./src/recommendationservice
+              image: heyrohhh/recommendationservice
+            - service_name: shoppingassistantservice
+              context: ./src/shoppingassistantservice
+              image: heyrohhh/shoppingassistantservice
+            - service_name: loadgenerator
+              context: ./src/loadgenerator
+              image: heyrohhh/loadgenerator
+    outputs:
+        version: ${{steps.uuid.outputs.sha}}
     steps:
       - name: checkout
         uses: actions/checkout@v4
 
       - name: set image version
-        run: echo "VERSION=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+        id: uuid
+        run: |
+           echo "sha=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
+           echo "VERSION=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
       
       - name: docker login
         uses: docker/login-action@v3
@@ -24,11 +69,24 @@ jobs:
       - name: Docker image build & push
         uses: docker/build-push-action@v4
         with: 
-          context: ./src/frontend
+          context: ${{ matrix.context }}
           push: true
-          tags: heyrohhh/frontend:${{ env.VERSION }}
+          tags: ${{ matrix.image }}:${{env.VERSION}},${{ matrix.image }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+  deploy-infra:
+    needs: codeInteg
+    runs-on: ubuntu-latest
+    concurrency:
+         group: terraform
+         cancel-in-progress: true
 
-      
+    env:
+      VERSION: ${{ needs.codeInteg.outputs.version }}
+    steps:  
+      - name: checkout
+        uses: actions/checkout@v4
+
       - name: aws login
         uses : aws-actions/configure-aws-credentials@v4
         with:
@@ -40,30 +98,45 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.6
-
-      - name: Terraform destroy
+      - name: Terraform init
         run: |
-            cd terraform
-            terraform init
-            terraform destroy \
-            -var="aws_region=us-east-1" \
-            -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}"
-       
-      # - name: Terraform plan
-      #   run: |
-      #    cd terraform
-      #    terraform init
-      #    terraform plan \
-      #    -var="aws_region=us-east-1" \
-      #    -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}"
+          cd terraform
+          terraform init
 
-      # - name: Terraform apply
+      # - name: Terraform destroy
       #   run: |
       #       cd terraform
-      #       terraform apply \
+      #       terraform init
+      #       terraform destroy \
       #       -var="aws_region=us-east-1" \
-      #       -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}" \
-      #       -auto-approve
+      #       -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}"
+       
+      - name: Terraform plan
+        run: |
+          cd terraform
+          terraform plan -out=tfplan \
+          -var="aws_region=us-east-1" \
+          -var="frontend_image=heyrohhh/frontend:${{ env.VERSION }}" \
+          -var="ad_image=heyrohhh/adservice:${{ env.VERSION }}" \
+          -var="cart_image=heyrohhh/cartservice:${{ env.VERSION }}" \
+          -var="checkout_image=heyrohhh/checkoutservice:${{ env.VERSION }}" \
+          -var="product_image=heyrohhh/productservice:${{ env.VERSION }}" \
+          -var="shipping_image=heyrohhh/shippingservice:${{ env.VERSION }}" \
+          -var="payment_image=heyrohhh/paymentservice:${{ env.VERSION }}" \
+          -var="currency_img=heyrohhh/currencyservice:${{ env.VERSION }}" \
+          -var="email_Img=heyrohhh/emailservice:${{ env.VERSION }}" \
+          -var="recomandation_image=heyrohhh/recommendationservice:${{ env.VERSION }}" \
+          -var="assitant_image=heyrohhh/shoppingassistantservice:${{ env.VERSION }}" \
+          -var="load_Img=heyrohhh/loadgenerator:${{ env.VERSION }}"
+          
+
+         
+
+      - name: Terraform apply
+        if: success()
+        run: |
+          cd terraform
+          terraform apply -auto-approve tfplan
 
 
          

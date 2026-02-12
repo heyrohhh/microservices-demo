@@ -1,24 +1,78 @@
-variable "aws_region" {
-  type = string
-}
 
 variable "frontend_image" {
   type = string
 }
 
-variable "frontend_cpu" {
+variable "ad_image" {
+   type = string 
+}
+
+variable "cart_image" {
+  type = string
+}
+
+variable "checkout_image" {
+  type = string
+}
+
+variable "currency_img" {
+  type = string
+}
+
+variable "email_Img" {
+  type = string
+}
+
+variable "load_Img" {
+  type = string
+}
+
+variable "payment_image" {
+  type = string
+}
+
+variable "product_image" {
+  type = string
+}
+
+variable "recomandation_image" {
+    type = string
+}
+
+variable "shipping_image" {
+    type = string
+}
+
+variable "assitant_image" {
+  type = string
+}
+
+variable "cpu" {
   type    = string
   default = "512"
 }
 
-variable "frontend_memory" {
+variable "memory" {
   type    = string
   default = "1024"
 }
 
-variable "frontend_log_group" {
-  type    = string
-  default = "/ecs/frontend"
+variable "service_arns" {
+  
+}
+
+variable "discovery_arns" {
+  type = map(string)
+}
+
+variable "network_mode" {
+   type = string
+   default = "awsvpc"
+}
+
+variable "compatibilities" {
+     type = set(string)
+     default = [ "FARGATE"]
 }
 
 variable "private_subnet_ids" {
@@ -33,7 +87,23 @@ variable "alb_target_group_arn" {
     type = string
 }
 
+variable "alb_target_group_cart_arn" {
+  type = string
+}
+
+variable "aws_lb_target_group_product_arn" {
+  type = string
+}
 
 variable "alb_listener_arn" {
      type = string
+}
+
+variable "aws_region" {
+  type = string
+
+  validation {
+    condition     = length(var.aws_region) > 0
+    error_message = "Region must be provided."
+  }
 }

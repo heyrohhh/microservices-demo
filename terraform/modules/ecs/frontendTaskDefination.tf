@@ -13,10 +13,10 @@ resource "aws_ecs_task_definition" "frontend_service" {
         aws_cloudwatch_log_group.ecs_frontend
     ]
   family   = "frontend-service"
-  network_mode   = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu   = var.frontend_cpu
-  memory   = var.frontend_memory
+  network_mode   = var.network_mode
+  requires_compatibilities = var.compatibilities
+  cpu   = var.cpu
+  memory   = var.memory
   execution_role_arn = aws_iam_role.task_execution_role.arn                 
 
   container_definitions = jsonencode([
@@ -28,7 +28,6 @@ resource "aws_ecs_task_definition" "frontend_service" {
       portMappings = [
         {
           containerPort = 8080
-          hostPort = 8080
           protocol = "tcp"
         }
       ]

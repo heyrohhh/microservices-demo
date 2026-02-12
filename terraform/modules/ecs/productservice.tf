@@ -13,7 +13,7 @@ resource "aws_ecs_service" "product" {
 
   load_balancer {
      target_group_arn = var.aws_lb_target_group_product_arn
-     container_name = "ecsCart"
+     container_name = "product"
      container_port = 3550
   }
  

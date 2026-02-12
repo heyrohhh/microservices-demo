@@ -12,6 +12,7 @@ resource "aws_cloudwatch_log_group" "ecs_loadgenrator" {
 resource "aws_ecs_task_definition" "loadgenrator" {
     depends_on = [ aws_cloudwatch_log_group.ecs_loadgenrator ]
     family = "loadgenrator"
+    network_mode = var.network_mode
     cpu = var.cpu
     memory = var.memory
     requires_compatibilities = var.compatibilities

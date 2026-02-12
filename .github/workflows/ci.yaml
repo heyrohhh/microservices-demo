@@ -162,35 +162,36 @@ jobs:
         run: |
             cd terraform
             terraform init
+            terraform destroy -auto-approve
        
-      - name: Terraform plan
-        run: |
-          cd terraform
-          terraform plan -out=tfplan \
-          -var="aws_region=us-east-1" \
-          -var="dockerhub_username=${{ secrets.DOCKERHUB_USERNAME }}" \
-          -var="dockerhub_password=${{ secrets.DOCKERHUB_PASSWORD }}" \
-          -var="frontend_image=heyrohhh/frontend:${{ needs.set-version.outputs.version }}" \
-          -var="ad_image=heyrohhh/adservice:${{ needs.set-version.outputs.version }}" \
-          -var="cart_image=heyrohhh/cartservice:${{ needs.set-version.outputs.version }}" \
-          -var="checkout_image=heyrohhh/checkoutservice:${{ needs.set-version.outputs.version }}" \
-          -var="product_image=heyrohhh/productservice:${{ needs.set-version.outputs.version }}" \
-          -var="shipping_image=heyrohhh/shippingservice:${{ needs.set-version.outputs.version }}" \
-          -var="payment_image=heyrohhh/paymentservice:${{ needs.set-version.outputs.version }}" \
-          -var="currency_img=heyrohhh/currencyservice:${{ needs.set-version.outputs.version }}" \
-          -var="email_Img=heyrohhh/emailservice:${{ needs.set-version.outputs.version }}" \
-          -var="recomandation_image=heyrohhh/recommendationservice:${{ needs.set-version.outputs.version }}" \
-          -var="assitant_image=heyrohhh/shoppingassistantservice:${{ needs.set-version.outputs.version }}" \
-          -var="load_Img=heyrohhh/loadgenerator:${{ needs.set-version.outputs.version }}" 
+      # - name: Terraform plan
+      #   run: |
+      #     cd terraform
+      #     terraform plan -out=tfplan \
+      #     -var="aws_region=us-east-1" \
+      #     -var="dockerhub_username=${{ secrets.DOCKERHUB_USERNAME }}" \
+      #     -var="dockerhub_password=${{ secrets.DOCKERHUB_PASSWORD }}" \
+      #     -var="frontend_image=heyrohhh/frontend:${{ needs.set-version.outputs.version }}" \
+      #     -var="ad_image=heyrohhh/adservice:${{ needs.set-version.outputs.version }}" \
+      #     -var="cart_image=heyrohhh/cartservice:${{ needs.set-version.outputs.version }}" \
+      #     -var="checkout_image=heyrohhh/checkoutservice:${{ needs.set-version.outputs.version }}" \
+      #     -var="product_image=heyrohhh/productservice:${{ needs.set-version.outputs.version }}" \
+      #     -var="shipping_image=heyrohhh/shippingservice:${{ needs.set-version.outputs.version }}" \
+      #     -var="payment_image=heyrohhh/paymentservice:${{ needs.set-version.outputs.version }}" \
+      #     -var="currency_img=heyrohhh/currencyservice:${{ needs.set-version.outputs.version }}" \
+      #     -var="email_Img=heyrohhh/emailservice:${{ needs.set-version.outputs.version }}" \
+      #     -var="recomandation_image=heyrohhh/recommendationservice:${{ needs.set-version.outputs.version }}" \
+      #     -var="assitant_image=heyrohhh/shoppingassistantservice:${{ needs.set-version.outputs.version }}" \
+      #     -var="load_Img=heyrohhh/loadgenerator:${{ needs.set-version.outputs.version }}" 
           
 
         
 
          
 
-      - name: Terraform apply
-        if: success()
-        run: |
-          cd terraform
-          terraform apply -auto-approve tfplan \
+      # - name: Terraform apply
+      #   if: success()
+      #   run: |
+      #     cd terraform
+      #     terraform apply -auto-approve tfplan \
           

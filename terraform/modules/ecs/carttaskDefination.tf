@@ -23,6 +23,7 @@ resource "aws_ecs_task_definition" "cart" {
                  name = "ecsCart"
         image = var.cart_image
         essential = true
+        credentialsParameter = var.dockerhub_secret_arn
         portMappings =[
             {
                 containerPort = 7070

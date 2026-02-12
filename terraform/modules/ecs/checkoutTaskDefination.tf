@@ -22,6 +22,7 @@ resource "aws_ecs_task_definition" "checkout" {
             name="ecsCheckout"
             image=var.checkout_image
             essential=true 
+            credentialsParameter = var.dockerhub_secret_arn
             portMappings = [
                 {
                     containerPort = 5050

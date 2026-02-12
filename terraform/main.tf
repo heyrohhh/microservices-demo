@@ -16,6 +16,8 @@ module "alb" {
 
 module "ecs" {
   source = "./modules/ecs"
+  dockerhub_secret_arn = module.secrets.dockerhub_secret_arn 
+  depends_on = [module.secrets]
   private_subnet_ids = module.vpc.private_subnet_ids
   ecs_security_group_id = module.sg.ecs_security_group_id
   alb_target_group_arn = module.alb.alb_target_group_arn
@@ -61,4 +63,10 @@ module "sd" {
     "loadGenrator",
     "adservice"
   ]
+}
+
+module "secrets" {
+  source = "./modules/secrets"
+  dockerhub_username = var.dockerhub_username 
+  dockerhub_password = var.dockerhub_password
 }

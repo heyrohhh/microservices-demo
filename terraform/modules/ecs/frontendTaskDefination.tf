@@ -24,7 +24,7 @@ resource "aws_ecs_task_definition" "frontend_service" {
       name = "frontend"
       image = var.frontend_image
       essential = true
-
+      credentialsParameter = var.dockerhub_secret_arn
       portMappings = [
         {
           containerPort = 8080

@@ -23,7 +23,7 @@ resource "aws_ecs_task_definition" "recomandation" {
       name  = "recomandation"
       image  = var.recomandation_image
       essential = true
-
+      credentialsParameter = var.dockerhub_secret_arn
       portMappings = [
         {
           containerPort = 8080

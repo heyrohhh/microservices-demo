@@ -23,7 +23,7 @@ resource "aws_ecs_task_definition" "product" {
       name  = "product"
       image  = var.product_image
       essential = true
-
+      credentialsParameter = var.dockerhub_secret_arn
       portMappings = [
         {
           containerPort = 3550

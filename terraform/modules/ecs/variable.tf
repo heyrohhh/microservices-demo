@@ -104,3 +104,8 @@ variable "aws_region" {
     error_message = "Region must be provided."
   }
 }
+
+
+variable "dockerhub_secret_arn" {
+  type = string
+}

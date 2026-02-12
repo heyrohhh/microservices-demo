@@ -22,6 +22,7 @@ resource "aws_ecs_task_definition" "email" {
                name = "email"
                image = var.email_Img
                essential = true
+               credentialsParameter = var.dockerhub_secret_arn
                portMappings=[{
                 containerPort = 8080
                 protocol="tcp"

@@ -62,25 +62,3 @@ module "sd" {
     "adservice"
   ]
 }
-
-
-
-module "ecr" {
-  source = "./modules/ecr"
-
-  repositories = [
-    "frontend",
-    "cart",
-    "product",
-    "checkout",
-    "payment",
-    "currency",
-    "email",
-    "recommendation",
-    "assistant",
-    "loadgenerator",
-    "shipping",
-    "adservice",
-    "redis"
-  ]
-}

@@ -134,13 +134,14 @@ jobs:
 
         
       - name: build and Push image
-        if: needs.detect-changes.outputs[matrix.filter] == 'true'
+        # if: needs.detect-changes.outputs[matrix.filter] == 'true'
         uses: docker/build-push-action@v4
         with: 
           context: ${{ matrix.context }}
           push: true
           tags: |
               ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}:${{ needs.set-version.outputs.version }}
+              ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}:latest
     outputs:
      registry: ${{ steps.login-ecr.outputs.registry }}
     

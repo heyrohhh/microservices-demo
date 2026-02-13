@@ -49,12 +49,12 @@ resource "aws_lb_target_group" "product_tg" {
      vpc_id = var.vpc_id
      target_type = "ip"
      health_check {
-       path = "/product*"
+       path = "/"
         interval = 10
         timeout = 5
         healthy_threshold = 3
         unhealthy_threshold = 2
-        matcher = "200"
+        matcher = "200-499"
      }
      tags = {
        Name = "product-tg"

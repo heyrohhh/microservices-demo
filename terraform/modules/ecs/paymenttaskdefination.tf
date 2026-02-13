@@ -28,7 +28,8 @@ resource "aws_ecs_task_definition" "payment" {
         }
       ]
       environment = [
-        { name = "PORT", value = "50051" }
+        { name = "PORT", value = "50051" },
+        { name = "DISABLE_PROFILER", value = "1" }
       ]
       logConfiguration = {
         logDriver ="awslogs"

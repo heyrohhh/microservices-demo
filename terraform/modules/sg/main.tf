@@ -27,25 +27,41 @@ resource "aws_security_group" "alb_sg" {
 #ecs Security group
 
 resource "aws_security_group" "ecs_sg" {
-    name = "ecs-sg"
-    vpc_id =  var.vpc_id
+    name   = "ecs-sg"
+    vpc_id = var.vpc_id
 
     tags = {
         Name = "ecs_sg"
     }
 
     ingress {
-         security_groups = [aws_security_group.alb_sg.id]
-         from_port = 80
-         to_port = 80
-         protocol = "tcp"
+        description= "Allow traffic from ALB on port 8080"
+        security_groups = [aws_security_group.alb_sg.id]
+        from_port= 8080   
+        to_port = 8080    
+        protocol= "tcp"
+    }
+
+    ingress {
+        description= "Allow traffic from ALB on port 7070 for cart service"
+        security_groups = [aws_security_group.alb_sg.id]
+        from_port= 7070
+        to_port = 7070
+        protocol= "tcp"
+    }
+
+    ingress {
+        description     = "Allow traffic from ALB on port 3550 for product service"
+        security_groups = [aws_security_group.alb_sg.id]
+        from_port= 3550
+        to_port = 3550
+        protocol= "tcp"
     }
 
     egress {
-
-         from_port = 0
-         to_port = 0
-         protocol = "-1"
-         cidr_blocks = ["0.0.0.0/0"]
+        from_port = 0
+        to_port= 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
     }
 }

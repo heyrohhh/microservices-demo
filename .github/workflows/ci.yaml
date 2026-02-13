@@ -131,10 +131,6 @@ jobs:
       - name: aws ecr login
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-      - name: Create ECR repo if not exists
-        run: |
-         aws ecr describe-repositories --repository-names ${{ matrix.image }} \
-         || aws ecr create-repository --repository-name ${{ matrix.image }}
 
         
       - name: build and Push image
@@ -172,7 +168,7 @@ jobs:
       - name: Terraform init
         run: |
             cd terraform
-            terraform init
+            terraform init --reconfigure
        
       - name: Terraform plan
         run: |

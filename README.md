@@ -1,169 +1,221 @@
-<!-- <p align="center">
-<img src="/src/frontend/static/icons/Hipster_HeroLogoMaroon.svg" width="300" alt="Online Boutique" />
-</p> -->
-![Continuous Integration](https://github.com/GoogleCloudPlatform/microservices-demo/workflows/Continuous%20Integration%20-%20Main/Release/badge.svg)
+# Microservices Demo on AWS using ECS Fargate, Terraform, and GitHub Actions
 
-**Online Boutique** is a cloud-first microservices demo application.  The application is a
-web-based e-commerce app where users can browse items, add them to the cart, and purchase them.
+This project is a complete end-to-end deployment of a microservices-based application on AWS.  
+It covers containerization, CI, infrastructure provisioning, and automated deployments using real production tooling.
 
-Google uses this application to demonstrate how developers can modernize enterprise applications using Google Cloud products, including: [Google Kubernetes Engine (GKE)](https://cloud.google.com/kubernetes-engine), [Cloud Service Mesh (CSM)](https://cloud.google.com/service-mesh), [gRPC](https://grpc.io/), [Cloud Operations](https://cloud.google.com/products/operations), [Spanner](https://cloud.google.com/spanner), [Memorystore](https://cloud.google.com/memorystore), [AlloyDB](https://cloud.google.com/alloydb), and [Gemini](https://ai.google.dev/). This application works on any Kubernetes cluster.
+The goal of this project is to demonstrate **practical DevOps skills**, not toy examples.
 
-If you’re using this demo, please **★Star** this repository to show your interest!
+---
 
-**Note to Googlers:** Please fill out the form at [go/microservices-demo](http://go/microservices-demo).
+## Architecture Overview
 
-## Architecture
+The application is composed of multiple independent microservices deployed as Docker containers on **AWS ECS Fargate**.  
+A public **Application Load Balancer (ALB)** exposes the frontend, while internal services communicate using **AWS Cloud Map Service Discovery**.  
+Container images are stored in **Amazon ECR**, and the entire infrastructure is provisioned using **Terraform**.  
+CI and image builds are automated using **GitHub Actions**.
 
-**Online Boutique** is composed of 11 microservices written in different
-languages that talk to each other over gRPC.
+---
 
-[![Architecture of
-microservices](/docs/img/architecture-diagram.png)](/docs/img/architecture-diagram.png)
+## High-Level Architecture
 
-Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
+- AWS VPC with public and private subnets
+- Application Load Balancer (public)
+- ECS Cluster (Fargate launch type)
+- ECS Services for each microservice
+- AWS Cloud Map for service discovery
+- Amazon ECR for container images
+- Terraform for Infrastructure as Code
+- GitHub Actions for CI and deployment
 
-| Service                                              | Language      | Description                                                                                                                       |
-| ---------------------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| [frontend](/src/frontend)                           | Go            | Exposes an HTTP server to serve the website. Does not require signup/login and generates session IDs for all users automatically. |
-| [cartservice](/src/cartservice)                     | C#            | Stores the items in the user's shopping cart in Redis and retrieves it.                                                           |
-| [productcatalogservice](/src/productcatalogservice) | Go            | Provides the list of products from a JSON file and ability to search products and get individual products.                        |
-| [currencyservice](/src/currencyservice)             | Node.js       | Converts one money amount to another currency. Uses real values fetched from European Central Bank. It's the highest QPS service. |
-| [paymentservice](/src/paymentservice)               | Node.js       | Charges the given credit card info (mock) with the given amount and returns a transaction ID.                                     |
-| [shippingservice](/src/shippingservice)             | Go            | Gives shipping cost estimates based on the shopping cart. Ships items to the given address (mock)                                 |
-| [emailservice](/src/emailservice)                   | Python        | Sends users an order confirmation email (mock).                                                                                   |
-| [checkoutservice](/src/checkoutservice)             | Go            | Retrieves user cart, prepares order and orchestrates the payment, shipping and the email notification.                            |
-| [recommendationservice](/src/recommendationservice) | Python        | Recommends other products based on what's given in the cart.                                                                      |
-| [adservice](/src/adservice)                         | Java          | Provides text ads based on given context words.                                                                                   |
-| [loadgenerator](/src/loadgenerator)                 | Python/Locust | Continuously sends requests imitating realistic user shopping flows to the frontend.                                              |
+---
 
-## Screenshots
+## Microservices List
 
-| Home Page                                                                                                         | Checkout Screen                                                                                                    |
-| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| [![Screenshot of store homepage](/docs/img/online-boutique-frontend-1.png)](/docs/img/online-boutique-frontend-1.png) | [![Screenshot of checkout screen](/docs/img/online-boutique-frontend-2.png)](/docs/img/online-boutique-frontend-2.png) |
+| Service Name | Exposure | Description |
+|-------------|---------|-------------|
+| frontend | Public (ALB) | Web UI |
+| cart-service | Internal | Shopping cart |
+| checkout-service | Internal | Checkout processing |
+| payment | Internal | Payment handling |
+| shipping | Internal | Shipping logic |
+| product | Internal | Product catalog |
+| recommendation-service | Internal | Product recommendations |
+| assistant-service | Internal | Shopping assistant |
+| currency-service | Internal | Currency conversion |
+| email-service | Internal | Email notifications |
+| redis-service | Internal | Cache |
+| loadgenerator-service | Internal | Load testing |
 
-## Quickstart (GKE)
+---
 
-1. Ensure you have the following requirements:
-   - [Google Cloud project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#creating_a_project).
-   - Shell environment with `gcloud`, `git`, and `kubectl`.
+## Container Image Strategy
 
-2. Clone the latest major version.
+- Each service has its own Docker image
+- Images are built and pushed to **Amazon ECR**
+- Image tags use **short Git SHA** for immutability
+- ECS task definitions are updated automatically with new tags
 
-   ```sh
-   git clone --depth 1 --branch v0 https://github.com/GoogleCloudPlatform/microservices-demo.git
-   cd microservices-demo/
-   ```
+Example image format:
+{ <account-id>.dkr.ecr.us-east-1.amazonaws.com/frontend:<git-sha> }
+---
 
-   The `--depth 1` argument skips downloading git history.
+## CI/CD Pipeline (GitHub Actions)
 
-3. Set the Google Cloud project and region and ensure the Google Kubernetes Engine API is enabled.
+The pipeline runs automatically on every push to the `main` branch.
 
-   ```sh
-   export PROJECT_ID=<PROJECT_ID>
-   export REGION=us-central1
-   gcloud services enable container.googleapis.com \
-     --project=${PROJECT_ID}
-   ```
+### detect-changes
+- Uses `dorny/paths-filter`
+- Detects which services have changed
+- Prevents unnecessary builds
 
-   Substitute `<PROJECT_ID>` with the ID of your Google Cloud project.
+### set-version
+- Extracts the short Git commit SHA
+- Used as the Docker image tag
 
-4. Create a GKE cluster and get the credentials for it.
+### codeInteg
+- Configures AWS credentials
+- Logs in to Amazon ECR
+- Creates ECR repositories if they do not exist
+- Builds and pushes Docker images only for changed services
 
-   ```sh
-   gcloud container clusters create-auto online-boutique \
-     --project=${PROJECT_ID} --region=${REGION}
-   ```
+### deploy-infra
+- Initializes Terraform
+- Runs Terraform plan
+- Applies infrastructure changes
+- Updates ECS services with new container images
 
-   Creating the cluster may take a few minutes.
+This ensures **zero manual deployment steps**.
 
-5. Deploy Online Boutique to the cluster.
+---
 
-   ```sh
-   kubectl apply -f ./release/kubernetes-manifests.yaml
-   ```
+## Infrastructure as Code (Terraform)
 
-6. Wait for the pods to be ready.
+Terraform is structured using reusable modules.
 
-   ```sh
-   kubectl get pods
-   ```
+### Modules
 
-   After a few minutes, you should see the Pods in a `Running` state:
+- **vpc**
+  - VPC
+  - Public and private subnets
+  - Internet Gateway
+  - NAT Gateway
 
-   ```
-   NAME                                     READY   STATUS    RESTARTS   AGE
-   adservice-76bdd69666-ckc5j               1/1     Running   0          2m58s
-   cartservice-66d497c6b7-dp5jr             1/1     Running   0          2m59s
-   checkoutservice-666c784bd6-4jd22         1/1     Running   0          3m1s
-   currencyservice-5d5d496984-4jmd7         1/1     Running   0          2m59s
-   emailservice-667457d9d6-75jcq            1/1     Running   0          3m2s
-   frontend-6b8d69b9fb-wjqdg                1/1     Running   0          3m1s
-   loadgenerator-665b5cd444-gwqdq           1/1     Running   0          3m
-   paymentservice-68596d6dd6-bf6bv          1/1     Running   0          3m
-   productcatalogservice-557d474574-888kr   1/1     Running   0          3m
-   recommendationservice-69c56b74d4-7z8r5   1/1     Running   0          3m1s
-   redis-cart-5f59546cdd-5jnqf              1/1     Running   0          2m58s
-   shippingservice-6ccc89f8fd-v686r         1/1     Running   0          2m58s
-   ```
+- **sg**
+  - Security groups for ALB and ECS
 
-7. Access the web frontend in a browser using the frontend's external IP.
+- **alb**
+  - Application Load Balancer
+  - Listener rules
+  - Target groups
 
-   ```sh
-   kubectl get service frontend-external | awk '{print $4}'
-   ```
+- **ecs**
+  - ECS cluster
+  - ECS services
+  - Task definitions
+  - IAM execution role
 
-   Visit `http://EXTERNAL_IP` in a web browser to access your instance of Online Boutique.
+- **servicediscovery**
+  - AWS Cloud Map namespace
+  - Service registrations
 
-8. Congrats! You've deployed the default Online Boutique. To deploy a different variation of Online Boutique (e.g., with Google Cloud Operations tracing, Istio, etc.), see [Deploy Online Boutique variations with Kustomize](#deploy-online-boutique-variations-with-kustomize).
+- **ecr**
+  - Amazon ECR repositories
 
-9. Once you are done with it, delete the GKE cluster.
+---
 
-   ```sh
-   gcloud container clusters delete online-boutique \
-     --project=${PROJECT_ID} --region=${REGION}
-   ```
+## Deployment Flow
 
-   Deleting the cluster may take a few minutes.
+1. Developer pushes code to `main`
+2. GitHub Actions triggers
+3. Changed services are detected
+4. Docker images are built and pushed to ECR
+5. Terraform updates ECS services
+6. New tasks are deployed automatically
 
-## Additional deployment options
+No SSH. No manual steps. No guessing.
 
-- **Terraform**: [See these instructions](/terraform) to learn how to deploy Online Boutique using [Terraform](https://www.terraform.io/intro).
-- **Istio / Cloud Service Mesh**: [See these instructions](/kustomize/components/service-mesh-istio/README.md) to deploy Online Boutique alongside an Istio-backed service mesh.
-- **Non-GKE clusters (Minikube, Kind, etc)**: See the [Development guide](/docs/development-guide.md) to learn how you can deploy Online Boutique on non-GKE clusters.
-- **AI assistant using Gemini**: [See these instructions](/kustomize/components/shopping-assistant/README.md) to deploy a Gemini-powered AI assistant that suggests products to purchase based on an image.
-- **And more**: The [`/kustomize` directory](/kustomize) contains instructions for customizing the deployment of Online Boutique with other variations.
+---
 
-## Documentation
+## Prerequisites
 
-- [Development](/docs/development-guide.md) to learn how to run and develop this app locally.
+- AWS account
+- IAM user with sufficient permissions (Admin for demo)
+- AWS CLI configured locally
+- Terraform installed (v1.6+)
+- GitHub repository with secrets configured
 
-## Demos featuring Online Boutique
+### Required GitHub Secrets
 
-- [Security hardening of the OnlineBoutique sample apps with the Docker Hardened Images (DHI)](https://medium.com/google-cloud/security-hardening-of-the-onlineboutique-sample-apps-with-docker-hardened-images-dhi-ca1fad348343)
-- [alpine, distroless or scratch?](https://medium.com/google-cloud/alpine-distroless-or-scratch-caac35250e0b)
-- [Platform Engineering in action: Deploy the Online Boutique sample apps with Score and Humanitec](https://medium.com/p/d99101001e69)
-- [The new Kubernetes Gateway API with Istio and Anthos Service Mesh (ASM)](https://medium.com/p/9d64c7009cd)
-- [Use Azure Redis Cache with the Online Boutique sample on AKS](https://medium.com/p/981bd98b53f8)
-- [Sail Sharp, 8 tips to optimize and secure your .NET containers for Kubernetes](https://medium.com/p/c68ba253844a)
-- [Deploy multi-region application with Anthos and Google cloud Spanner](https://medium.com/google-cloud/a2ea3493ed0)
-- [Use Google Cloud Memorystore (Redis) with the Online Boutique sample on GKE](https://medium.com/p/82f7879a900d)
-- [Use Helm to simplify the deployment of Online Boutique, with a Service Mesh, GitOps, and more!](https://medium.com/p/246119e46d53)
-- [How to reduce microservices complexity with Apigee and Anthos Service Mesh](https://cloud.google.com/blog/products/application-modernization/api-management-and-service-mesh-go-together)
-- [gRPC health probes with Kubernetes 1.24+](https://medium.com/p/b5bd26253a4c)
-- [Use Google Cloud Spanner with the Online Boutique sample](https://medium.com/p/f7248e077339)
-- [Seamlessly encrypt traffic from any apps in your Mesh to Memorystore (redis)](https://medium.com/google-cloud/64b71969318d)
-- [Strengthen your app's security with Cloud Service Mesh and Anthos Config Management](https://cloud.google.com/service-mesh/docs/strengthen-app-security)
-- [From edge to mesh: Exposing service mesh applications through GKE Ingress](https://cloud.google.com/architecture/exposing-service-mesh-apps-through-gke-ingress)
-- [Take the first step toward SRE with Cloud Operations Sandbox](https://cloud.google.com/blog/products/operations/on-the-road-to-sre-with-cloud-operations-sandbox)
-- [Deploying the Online Boutique sample application on Cloud Service Mesh](https://cloud.google.com/service-mesh/docs/onlineboutique-install-kpt)
-- [Anthos Service Mesh Workshop: Lab Guide](https://codelabs.developers.google.com/codelabs/anthos-service-mesh-workshop)
-- [KubeCon EU 2019 - Reinventing Networking: A Deep Dive into Istio's Multicluster Gateways - Steve Dake, Independent](https://youtu.be/-t2BfT59zJA?t=982)
-- Google Cloud Next'18 SF
-  - [Day 1 Keynote](https://youtu.be/vJ9OaAqfxo4?t=2416) showing GKE On-Prem
-  - [Day 3 Keynote](https://youtu.be/JQPOPV_VH5w?t=815) showing Stackdriver
-    APM (Tracing, Code Search, Profiler, Google Cloud Build)
-  - [Introduction to Service Management with Istio](https://www.youtube.com/watch?v=wCJrdKdD6UM&feature=youtu.be&t=586)
-- [Google Cloud Next'18 London – Keynote](https://youtu.be/nIq2pkNcfEI?t=3071)
-  showing Stackdriver Incident Response Management
-- [Microservices demo showcasing Go Micro](https://github.com/go-micro/demo)
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+
+---
+
+## How to Deploy
+
+```bash
+git clone <repository-url>
+cd microservices-demo
+git push origin main
+
+That's it Else Everything is automated
+
+____________________________________ Challenges Faced_____________________________
+
+Common Issues and Fixes
+DockerHub Rate Limit Error
+
+Reason: Unauthenticated DockerHub pulls
+Fix: Migrated all images to Amazon ECR
+
+CannotPullContainerError
+
+Reason: Image name mismatch between CI and ECS task definition
+Fix: Standardized service name and image naming across CI and Terraform
+
+GCP Profiler Issue and Resolution
+Problem
+
+While deploying the microservices on AWS ECS, the application logs showed repeated errors related to Google Cloud Profiler. Services were restarting and ECS tasks were unstable.
+
+Investigation
+CloudWatch logs revealed profiler initialization errors such as:
+Failure to load default Google credentials
+Profiler agent unable to start
+This indicated that @google-cloud/profiler was attempting to start in an environment where GCP credentials were not available.
+Root Cause
+Google Cloud Profiler is designed to run only inside GCP environments such as:
+GKE
+Cloud Run
+Compute Engine
+This project is deployed on AWS ECS, where:
+No GCP metadata server exist
+No GCP service account is attached
+No GOOGLE_APPLICATION_CREDENTIALs are configured
+As a result, the profiler continuously failed and affected service stability.
+Fix Applied
+The profiler was explicitly disabled for non-GCP environments.
+ { name = "DISABLE_PROFILER", value = "1" }  -> added in Payment Task Defination
+
+Target Group Unhealthy
+Reason: Container port mismatch or app not listening
+Fix: Aligned containerPort, health check path, and ALB target group
+
+Cost Awareness
+This project uses real AWS resources.
+Main cost drivers:
+NAT Gateway
+Application Load Balancer
+ECS Fargate tasks
+Recommendation:
+Destroy infrastructure when not in use
+Avoid leaving NAT Gateways running unnecessarily
+Future Improvements
+Blue/Green deployments
+Canary release
+Autoscaling policies
+Observability with Prometheus and Grafana
+Secrets management using AWS Secrets Manager
+
+
+This Repo is Manage By **Rohit Neel Mishra**

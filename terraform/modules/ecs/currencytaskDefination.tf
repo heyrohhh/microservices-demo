@@ -28,7 +28,8 @@ resource "aws_ecs_task_definition" "currency" {
         }
       ]
       environment = [
-        { name = "PORT", value = "7000" }
+        { name = "PORT", value = "7000" },
+        { name = "DISABLE_PROFILER", value = "1" }
       ]
       logConfiguration = {
         logDriver = "awslogs"

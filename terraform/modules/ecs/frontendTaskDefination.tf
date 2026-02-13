@@ -36,7 +36,7 @@ resource "aws_ecs_task_definition" "frontend_service" {
         { name="SHIPPING_SERVICE_ADDR", value = "shipping.${var.service_discovery_namespace}:50051" },
         { name ="CHECKOUT_SERVICE_ADDR", value = "checkout.${var.service_discovery_namespace}:5050" },
         { name= "AD_SERVICE_ADDR", value = "adservice.${var.service_discovery_namespace}:9555" },
-        { name = "SHOPPING_ASSISTANT_SERVICE_ADDR", value = "shoppingassistant.${var.service_discovery_namespace}:8080" }
+        { name = "SHOPPING_ASSISTANT_SERVICE_ADDR", value = "shoppingassistant.${var.service_discovery_namespace}:7070" }
       ]
       logConfiguration = {
         logDriver = "awslogs"

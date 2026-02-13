@@ -2,7 +2,7 @@
 
 resource "aws_security_group" "alb_sg" {
     name = "alb-sg"
-    vpc_id =  var.vpc_id
+    vpc_id = var.vpc_id
 
     tags = {
         Name = "alb_sg"

@@ -14,6 +14,26 @@ module "alb" {
   alb_security_group_id  = module.sg.alb_security_group_id
 }
 
+module "discovery" {
+  source = "./modules/discovery"
+  
+  vpc_id         = module.vpc.vpc_id
+  namespace_name = "local"
+
+   service_names = [
+    "checkout",
+    "payment",
+    "shipping",
+    "email",
+    "currency",
+    "recomandation",
+    "redis",
+    "shoppingassistant",
+    "loadGenrator",
+    "adservice"
+  ]
+}
+
 module "ecs" {
   source = "./modules/ecs"
   private_subnet_ids = module.vpc.private_subnet_ids
@@ -35,30 +55,10 @@ module "ecs" {
   recomandation_image = var.recomandation_image
   shipping_image = var.shipping_image
   assitant_image = var.assitant_image
+  service_discovery_namespace = module.discovery.namespace_name 
   cpu = var.cpu
   memory = var.memory
-  discovery_arns = module.sd.discovery_arns
+  discovery_arns              = module.discovery.service_arns
 }
 
 
-
-
-module "sd" {
-  source = "./modules/servicediscovery"
-
-  namespace_name = "internal"
-  vpc_id         = module.vpc.vpc_id
-
-  service_names = [
-    "checkout",
-    "payment",
-    "shipping",
-    "email",
-    "currency",
-    "recomandation",
-    "redis",
-    "shoppingassistant",
-    "loadGenrator",
-    "adservice"
-  ]
-}

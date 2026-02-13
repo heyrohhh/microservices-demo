@@ -5,6 +5,6 @@ variable "value" {
 }
 
 variable "type" {
-  type    = string
+  type = string
   default = "SecureString"
 }

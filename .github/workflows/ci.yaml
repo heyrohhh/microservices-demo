@@ -110,9 +110,9 @@ jobs:
               context: ./src/recommendationservice
               image: recommendationservice
             - service_name: shoppingassistantservice
-              filter: shoppingassistantservice
+              filter: shoppingassistant
               context: ./src/shoppingassistantservice
-              image: shoppingassistantservice
+              image: shoppingassistant
             - service_name: loadgenerator
               filter: loadgenerator
               context: ./src/loadgenerator
@@ -186,7 +186,7 @@ jobs:
           -var="currency_img=${{ needs.codeInteg.outputs.registry }}/currencyservice:${{ needs.set-version.outputs.version }}" \
           -var="email_Img=${{ needs.codeInteg.outputs.registry }}/emailservice:${{ needs.set-version.outputs.version }}" \
           -var="recomandation_image=${{ needs.codeInteg.outputs.registry }}/recommendationservice:${{ needs.set-version.outputs.version }}" \
-          -var="assitant_image=${{ needs.codeInteg.outputs.registry }}/shoppingassistantservice:${{ needs.set-version.outputs.version }}" \
+          -var="assitant_image=${{ needs.codeInteg.outputs.registry }}/shoppingassistant:${{ needs.set-version.outputs.version }}" \
           -var="load_Img=${{ needs.codeInteg.outputs.registry }}/loadgenerator:${{ needs.set-version.outputs.version }}" 
        
 

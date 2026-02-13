@@ -57,7 +57,7 @@ module "sd" {
     "currency",
     "recomandation",
     "redis",
-    "assitant",
+    "shoppingassistant",
     "loadGenrator",
     "adservice"
   ]

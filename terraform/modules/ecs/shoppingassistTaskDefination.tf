@@ -20,7 +20,7 @@ resource "aws_ecs_task_definition" "assitant" {
 
   container_definitions = jsonencode([
     {
-      name  = "assitant"
+      name  = "shoppingassistant"
       image  = var.assitant_image
       essential = true
       portMappings = [

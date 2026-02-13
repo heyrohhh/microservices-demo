@@ -1,5 +1,5 @@
 resource "aws_ecs_service" "assitant_service" {
-  name = "assitant-service"
+  name = "shoppingassistant"
   cluster = aws_ecs_cluster.ecs_cluster.id
   task_definition = aws_ecs_task_definition.assitant.arn
   desired_count = 1
@@ -12,6 +12,6 @@ resource "aws_ecs_service" "assitant_service" {
   }
 
   service_registries {
-      registry_arn = var.discovery_arns["assitant"]
+      registry_arn = var.discovery_arns["shoppingassistant"]
   }
 }

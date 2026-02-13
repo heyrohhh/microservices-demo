@@ -54,7 +54,7 @@ CI and image builds are automated using **GitHub Actions**.
 - Images are built and pushed to **Amazon ECR**
 - Image tags use **short Git SHA** for immutability
 - ECS task definitions are updated automatically with new tags
-
+ 
 Example image format:
 { <account-id>.dkr.ecr.us-east-1.amazonaws.com/frontend:<git-sha> }
 ---

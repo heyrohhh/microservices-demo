@@ -16,3 +16,4 @@ resource "aws_ecs_service" "adtask_service" {
   }
 
 }
+ 

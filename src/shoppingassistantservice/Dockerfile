@@ -22,23 +22,25 @@ RUN apt-get -qq update \
 
 # get packages
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 FROM base
+
 # Enable unbuffered logging
 ENV PYTHONUNBUFFERED=1
 
 # get packages
 WORKDIR /shoppingassistantservice
 
-# Grab packages from builder
-COPY --from=builder /usr/local/lib/python3.14/ /usr/local/lib/python3.14/
+# Grab packages from builder - Fixed to copy site-packages correctly
+COPY --from=builder /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Add the application
 COPY . .
 
 # set listen port
-ENV PORT = "8080"
+ENV PORT="8080"
 EXPOSE 8080
 
 ENTRYPOINT ["python", "shoppingassistantservice.py"]

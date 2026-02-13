@@ -11,16 +11,10 @@ resource "aws_ecs_service" "product" {
     assign_public_ip = false
   }
 
-  load_balancer {
-    target_group_arn = var.aws_lb_target_group_product_arn
-    container_name= "product"
-    container_port = 3550
-  }
 
   service_registries {
     registry_arn= var.discovery_arns["product"]
   }
 
-  depends_on =[var.alb_listener_arn]
 }
 

@@ -11,15 +11,8 @@ resource "aws_ecs_service" "cart_service" {
     assign_public_ip = false
   }
 
-  load_balancer {
-    target_group_arn = var.alb_target_group_cart_arn
-    container_name = "ecsCart"
-    container_port= 7070
-  }
-
   service_registries {
     registry_arn = var.discovery_arns["cart"]
   }
 
-  depends_on = [var.alb_listener_arn]
 }

@@ -18,7 +18,7 @@ resource "aws_ecs_service" "cart_service" {
   }
 
   service_registries {
-    registry_arn = var.discovery_arns["cartservice"]
+    registry_arn = var.discovery_arns["cart"]
   }
 
   depends_on = [var.alb_listener_arn]

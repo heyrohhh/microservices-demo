@@ -21,6 +21,9 @@ module "discovery" {
   namespace_name = "local"
 
    service_names = [
+    "cart",
+    "product",
+    "frontend",
     "checkout",
     "payment",
     "shipping",
@@ -29,8 +32,8 @@ module "discovery" {
     "recomandation",
     "redis",
     "shoppingassistant",
-    "loadGenrator",
-    "adservice"
+   "loadGenrator",
+   "adservice"
   ]
 }
 

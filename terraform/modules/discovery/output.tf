@@ -1,16 +1,16 @@
 output "namespace_id" {
   description = "Service discovery namespace ID"
-  value =aws_service_discovery_private_dns_namespace.namespace.id
+  value       = aws_service_discovery_private_dns_namespace.namespace.id
 }
 
 output "namespace_name" {
   description = "Service discovery namespace name"
-  value = aws_service_discovery_private_dns_namespace.namespace.name
+  value       = aws_service_discovery_private_dns_namespace.namespace.name
 }
 
 output "namespace_arn" {
   description = "Service discovery namespace ARN"
-  value= aws_service_discovery_private_dns_namespace.namespace.arn
+  value       = aws_service_discovery_private_dns_namespace.namespace.arn
 }
 
 output "service_arns" {

@@ -18,7 +18,7 @@ resource "aws_ecs_service" "product" {
   }
 
   service_registries {
-    registry_arn= var.discovery_arns["productservice"]
+    registry_arn= var.discovery_arns["product"]
   }
 
   depends_on =[var.alb_listener_arn]

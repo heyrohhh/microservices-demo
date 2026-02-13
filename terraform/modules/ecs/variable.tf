@@ -79,13 +79,6 @@ variable "alb_target_group_arn" {
 
 
 
-variable "alb_target_group_cart_arn" {
-  type =string
-}
-variable "aws_lb_target_group_product_arn" {
-  type = string
-}
-
 variable "alb_listener_arn" {
      type = string
 }

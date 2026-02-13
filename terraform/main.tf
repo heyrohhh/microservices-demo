@@ -70,3 +70,23 @@ module "secrets" {
   dockerhub_username = var.dockerhub_username 
   dockerhub_password = var.dockerhub_password
 }
+
+module "ecr" {
+  source = "./modules/ecr"
+
+  repositories = [
+    "frontend",
+    "cart",
+    "product",
+    "checkout",
+    "payment",
+    "currency",
+    "email",
+    "recommendation",
+    "assistant",
+    "loadgenerator",
+    "shipping",
+    "adservice",
+    "redis"
+  ]
+}

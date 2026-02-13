@@ -72,71 +72,82 @@ jobs:
             - service_name: frontend
               filter: frontend
               context: ./src/frontend
-              image: heyrohhh/frontend
+              image: frontend
             - service_name: adservice
               filter: adservice
               context: ./src/adservice
-              image: heyrohhh/adservice
+              image: adservice
             - service_name: cartservice
               filter: cartservice
               context: ./src/cartservice/src/
-              image: heyrohhh/cartservice
+              image: cartservice
             - service_name: checkoutservice
               filter: checkoutservice
               context: ./src/checkoutservice
-              image: heyrohhh/checkoutservice
+              image: checkoutservice
             - service_name: productservice
               filter: productservice
               context: ./src/productcatalogservice
-              image: heyrohhh/productservice
+              image: productservice
             - service_name: shippingservice
               filter: shippingservice
               context: ./src/shippingservice
-              image: heyrohhh/shippingservice
+              image: shippingservice
             - service_name: paymentservice
               filter: paymentservice
               context: ./src/paymentservice
-              image: heyrohhh/paymentservice
+              image: paymentservice
             - service_name: currencyservice
               filter: currencyservice
               context: ./src/currencyservice
-              image: heyrohhh/currencyservice
+              image: currencyservice
             - service_name: emailservice
               filter: emailservice
               context: ./src/emailservice
-              image: heyrohhh/emailservice
+              image: emailservice
             - service_name: recommendationservice
               filter: recommendationservice
               context: ./src/recommendationservice
-              image: heyrohhh/recommendationservice
+              image: recommendationservice
             - service_name: shoppingassistantservice
               filter: shoppingassistantservice
               context: ./src/shoppingassistantservice
-              image: heyrohhh/shoppingassistantservice
+              image: shoppingassistantservice
             - service_name: loadgenerator
               filter: loadgenerator
               context: ./src/loadgenerator
-              image: heyrohhh/loadgenerator
+              image: loadgenerator
     steps:
       - name: checkout
         uses: actions/checkout@v4
       
-      - name: docker login
-        uses: docker/login-action@v3
+      - name: aws login
+        uses : aws-actions/configure-aws-credentials@v4
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+     
+      - name: aws ecr login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Create ECR repo if not exists
+        run: |
+         aws ecr describe-repositories --repository-names ${{ matrix.image }} \
+         || aws ecr create-repository --repository-name ${{ matrix.image }}
 
-      - name: Docker image build & push
+        
+      - name: build and Push image
+        if: needs.detect-changes.outputs[matrix.filter] == 'true'
         uses: docker/build-push-action@v4
         with: 
           context: ${{ matrix.context }}
           push: true
-          tags: ${{ matrix.image }}:${{ needs.set-version.outputs.version }},${{ matrix.image }}:${{ needs.set-version.outputs.version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: |
+              ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}:${{ needs.set-version.outputs.version }}
+    outputs:
+     registry: ${{ steps.login-ecr.outputs.registry }}
+    
   deploy-infra:
     needs: [codeInteg, set-version]
     runs-on: ubuntu-latest
@@ -168,25 +179,23 @@ jobs:
           cd terraform
           terraform plan -out=tfplan \
           -var="aws_region=us-east-1" \
-          -var="dockerhub_username=${{ secrets.DOCKERHUB_USERNAME }}" \
-          -var="dockerhub_password=${{ secrets.DOCKERHUB_PASSWORD }}" \
-          -var="frontend_image=heyrohhh/frontend:${{ needs.set-version.outputs.version }}" \
-          -var="ad_image=heyrohhh/adservice:${{ needs.set-version.outputs.version }}" \
-          -var="cart_image=heyrohhh/cartservice:${{ needs.set-version.outputs.version }}" \
-          -var="checkout_image=heyrohhh/checkoutservice:${{ needs.set-version.outputs.version }}" \
-          -var="product_image=heyrohhh/productservice:${{ needs.set-version.outputs.version }}" \
-          -var="shipping_image=heyrohhh/shippingservice:${{ needs.set-version.outputs.version }}" \
-          -var="payment_image=heyrohhh/paymentservice:${{ needs.set-version.outputs.version }}" \
-          -var="currency_img=heyrohhh/currencyservice:${{ needs.set-version.outputs.version }}" \
-          -var="email_Img=heyrohhh/emailservice:${{ needs.set-version.outputs.version }}" \
-          -var="recomandation_image=heyrohhh/recommendationservice:${{ needs.set-version.outputs.version }}" \
-          -var="assitant_image=heyrohhh/shoppingassistantservice:${{ needs.set-version.outputs.version }}" \
-          -var="load_Img=heyrohhh/loadgenerator:${{ needs.set-version.outputs.version }}" 
+          -var="frontend_image=${{ needs.codeInteg.outputs.registry }}/frontend:${{ needs.set-version.outputs.version }}" \
+          -var="ad_image=${{ needs.codeInteg.outputs.registry }}/adservice:${{ needs.set-version.outputs.version }}" \
+          -var="cart_image=${{ needs.codeInteg.outputs.registry }}/cartservice:${{ needs.set-version.outputs.version }}" \
+          -var="checkout_image=${{ needs.codeInteg.outputs.registry }}/checkoutservice:${{ needs.set-version.outputs.version }}" \
+          -var="product_image=${{ needs.codeInteg.outputs.registry }}/productservice:${{ needs.set-version.outputs.version }}" \
+          -var="shipping_image=${{ needs.codeInteg.outputs.registry }}/shippingservice:${{ needs.set-version.outputs.version }}" \
+          -var="payment_image=${{ needs.codeInteg.outputs.registry }}/paymentservice:${{ needs.set-version.outputs.version }}" \
+          -var="currency_img=${{ needs.codeInteg.outputs.registry }}/currencyservice:${{ needs.set-version.outputs.version }}" \
+          -var="email_Img=${{ needs.codeInteg.outputs.registry }}/emailservice:${{ needs.set-version.outputs.version }}" \
+          -var="recomandation_image=${{ needs.codeInteg.outputs.registry }}/recommendationservice:${{ needs.set-version.outputs.version }}" \
+          -var="assitant_image=${{ needs.codeInteg.outputs.registry }}/shoppingassistantservice:${{ needs.set-version.outputs.version }}" \
+          -var="load_Img=${{ needs.codeInteg.outputs.registry }}/loadgenerator:${{ needs.set-version.outputs.version }}" 
        
 
       - name: Terraform apply
         if: success()
         run: |
           cd terraform
-          terraform apply -auto-approve tfplan \
+          terraform apply -auto-approve tfplan 
    

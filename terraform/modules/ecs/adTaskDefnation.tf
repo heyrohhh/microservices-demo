@@ -23,9 +23,6 @@ resource "aws_ecs_task_definition" "adtask" {
             name="ecsAd"
             image=var.ad_image
             essential=true
-            repositoryCredentials = {
-
-}
             portMappings = [
                 {
                     containerPort = 9555

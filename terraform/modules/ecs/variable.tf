@@ -106,6 +106,4 @@ variable "aws_region" {
 }
 
 
-variable "dockerhub_secret_arn" {
-  type = string
-}
+

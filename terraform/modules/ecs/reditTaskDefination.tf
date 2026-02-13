@@ -23,7 +23,6 @@ resource "aws_ecs_task_definition" "redis" {
       name  = "redis"
       image = "redis:7.2-alpine"
       essential = true
-      credentialsParameter = var.dockerhub_secret_arn
       portMappings = [
         {
           containerPort = 6379

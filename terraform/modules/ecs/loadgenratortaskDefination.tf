@@ -23,7 +23,6 @@ resource "aws_ecs_task_definition" "loadgenrator" {
     name  = "load-generator"
     image = var.load_Img
     essential = true
-    credentialsParameter = var.dockerhub_secret_arn
     portMappings = [
       {
         containerPort = 8080

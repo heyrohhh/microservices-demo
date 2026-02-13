@@ -23,7 +23,7 @@ resource "aws_ecs_task_definition" "currency" {
             name="ecsCurrency"
             image=var.currency_img
             essential=true
-            credentialsParameter = var.dockerhub_secret_arn
+
             portMappings = [
                 {
                     containerPort = 7000

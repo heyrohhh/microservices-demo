@@ -46,11 +46,3 @@ variable "cpu"{
 variable "memory" {
     default = "1024"
 }
-
-variable "dockerhub_username" {
-   type = string 
-}
-
-variable "dockerhub_password" {
-     type = string
-}

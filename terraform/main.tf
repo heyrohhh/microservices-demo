@@ -16,15 +16,13 @@ module "alb" {
 
 module "ecs" {
   source = "./modules/ecs"
-  dockerhub_secret_arn = module.secrets.dockerhub_secret_arn 
-  depends_on = [module.secrets]
   private_subnet_ids = module.vpc.private_subnet_ids
   ecs_security_group_id = module.sg.ecs_security_group_id
   alb_target_group_arn = module.alb.alb_target_group_arn
   aws_lb_target_group_product_arn = module.alb.aws_lb_target_group_product_arn
   alb_target_group_cart_arn = module.alb.alb_target_group_cart_arn
   alb_listener_arn = module.alb.alb_listener_arn
-  aws_region = var.aws_region
+  aws_region = var.aws_region 
   frontend_image  = var.frontend_image
   ad_image = var.ad_image
   cart_image =  var.cart_image
@@ -65,11 +63,7 @@ module "sd" {
   ]
 }
 
-module "secrets" {
-  source = "./modules/secrets"
-  dockerhub_username = var.dockerhub_username 
-  dockerhub_password = var.dockerhub_password
-}
+
 
 module "ecr" {
   source = "./modules/ecr"

@@ -23,7 +23,6 @@ resource "aws_ecs_task_definition" "payment" {
       name  = "payment"
       image  = var.payment_image
       essential = true
-      credentialsParameter = var.dockerhub_secret_arn
       portMappings = [
         {
           containerPort = 50051

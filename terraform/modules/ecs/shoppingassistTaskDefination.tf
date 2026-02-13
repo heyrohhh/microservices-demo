@@ -23,7 +23,6 @@ resource "aws_ecs_task_definition" "assitant" {
       name  = "assitant"
       image  = var.assitant_image
       essential = true
-      credentialsParameter = var.dockerhub_secret_arn
       portMappings = [
         {
           containerPort = 8080
